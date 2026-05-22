@@ -24,22 +24,34 @@ window.onload = async function () {
 
         invitados = XLSX.utils.sheet_to_json(hoja);
 
-        // Agregar estado
         invitados = invitados.map(persona => {
+
+            // Detectar grado automáticamente
+            const grado =
+                persona["Cargo/Grado"] ||
+                persona["Grado"] ||
+                persona["Cargo"] ||
+                "";
+
+            // Crear nombre completo
+            const nombreCompleto = `
+                ${persona["Nombre"] || ""}
+                ${persona["Apellido P"] || ""}
+                ${persona["Apellido Materno"] || ""}
+                ${persona["Apellido M"] || ""}
+            `
+            .replace(/\s+/g, ' ')
+            .trim();
 
             return {
 
                 ...persona,
 
-                estado: false,
+                grado,
 
-                nombreCompleto: `
-                    ${persona["Nombre"] || ""}
-                    ${persona["Apellido P"] || ""}
-                    ${persona["Apellido M"] || ""}
-                `
-                .replace(/\s+/g, ' ')
-                .trim()
+                nombreCompleto,
+
+                estado: false
 
             };
 
@@ -79,11 +91,11 @@ function mostrarInvitados(lista) {
         fila.innerHTML = `
 
             <td>
-                ${persona["Cargo/Grado"] || ""}
+                ${persona.grado}
             </td>
 
             <td>
-                ${persona.nombreCompleto || ""}
+                ${persona.nombreCompleto}
             </td>
 
             <td>
@@ -110,7 +122,7 @@ function mostrarInvitados(lista) {
                         class="btn btn-success"
                         onclick="marcarIngreso(${index})"
                     >
-                        Ingresó
+                        Marcar ingreso
                     </button>`
                 }
 
@@ -206,8 +218,8 @@ document.addEventListener(
                     invitados.filter(persona => {
 
                         const contenido = `
-                            ${persona["Cargo/Grado"] || ""}
-                            ${persona.nombreCompleto || ""}
+                            ${persona.grado}
+                            ${persona.nombreCompleto}
                             ${persona["Sector"] || ""}
                             ${persona["Asiento"] || ""}
                         `
