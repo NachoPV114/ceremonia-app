@@ -1,137 +1,160 @@
 let invitados = [];
 
 let ingresados = JSON.parse(
-    localStorage.getItem('ingresados')
+    localStorage.getItem("ingresados")
 ) || [];
 
-// Cargar Excel automáticamente
 
-window.onload = async function() {
+// ===============================
+// CARGAR EXCEL AUTOMÁTICAMENTE
+// ===============================
 
-    const respuesta = await fetch('Invitados.xlsx');
+window.onload = async function () {
+
+    const respuesta = await fetch("Invitados.xlsx");
 
     const data = await respuesta.arrayBuffer();
 
     const workbook = XLSX.read(data, {
-        type: 'array'
+        type: "array"
     });
 
-    const hoja =
-        workbook.Sheets[workbook.SheetNames[0]];
+    const hoja = workbook.Sheets[workbook.SheetNames[0]];
 
-    invitados =
-        XLSX.utils.sheet_to_json(hoja);
+    invitados = XLSX.utils.sheet_to_json(hoja);
 
     mostrarInvitados(invitados);
 
-    actualizarEstadisticas();
-
+    actualizarContadores();
 };
 
-// Mostrar invitados
 
-fila.innerHTML = `
-    <td>${persona["Cargo/Grado"] || ""}</td>
+// ===============================
+// MOSTRAR INVITADOS
+// ===============================
 
-    <td>
-        ${persona["Nombre"] || ""} 
-        ${persona["Apellido P"] || ""} 
-        ${persona["Apellido M"] || ""}
-    </td>
+function mostrarInvitados(lista) {
 
-    <td>${persona["Sector"] || ""}</td>
+    const tabla = document.getElementById("tablaInvitados");
 
-    <td>${persona["Asiento"] || ""}</td>
+    tabla.innerHTML = "";
 
-    <td>
-        <button 
-            class="btn ${
-                ingresados.includes(
-                    `${persona["Nombre"]}${persona["Apellido P"]}`
-                )
-                    ? "btn-danger"
-                    : "btn-success"
-            }"
-            onclick="marcarIngreso('${persona["Nombre"]}${persona["Apellido P"]}')"
-        >
-            ${
-                ingresados.includes(
-                    `${persona["Nombre"]}${persona["Apellido P"]}`
-                )
-                    ? "Deshacer"
-                    : "Ingresó"
-            }
-        </button>
-    </td>
-`;
+    lista.forEach((persona) => {
 
-// Marcar ingreso
+        const fila = document.createElement("tr");
 
-function marcarIngreso(nombre) {
+        const idPersona =
+            `${persona["Nombre"] || ""}${persona["Apellido P"] || ""}`;
 
-    if (ingresados.includes(nombre)) {
+
+        fila.innerHTML = `
+            <td>${persona["Cargo/Grado"] || ""}</td>
+
+            <td>
+                ${persona["Nombre"] || ""} 
+                ${persona["Apellido P"] || ""} 
+                ${persona["Apellido M"] || ""}
+            </td>
+
+            <td>${persona["Sector"] || ""}</td>
+
+            <td>${persona["Asiento"] || ""}</td>
+
+            <td>
+                <button
+                    class="btn ${
+                        ingresados.includes(idPersona)
+                            ? "btn-danger"
+                            : "btn-success"
+                    }"
+
+                    onclick="marcarIngreso('${idPersona}')"
+                >
+                    ${
+                        ingresados.includes(idPersona)
+                            ? "Deshacer"
+                            : "Ingresó"
+                    }
+                </button>
+            </td>
+        `;
+
+        tabla.appendChild(fila);
+
+    });
+
+}
+
+
+// ===============================
+// MARCAR / DESHACER INGRESO
+// ===============================
+
+function marcarIngreso(idPersona) {
+
+    if (ingresados.includes(idPersona)) {
 
         ingresados = ingresados.filter(
-            persona => persona !== nombre
+            item => item !== idPersona
         );
 
     } else {
 
-        ingresados.push(nombre);
+        ingresados.push(idPersona);
 
     }
 
     localStorage.setItem(
-        'ingresados',
+        "ingresados",
         JSON.stringify(ingresados)
     );
 
     mostrarInvitados(invitados);
 
-    actualizarEstadisticas();
-
+    actualizarContadores();
 }
 
-// Estadísticas
 
-function actualizarEstadisticas() {
+// ===============================
+// CONTADORES
+// ===============================
 
-    document.getElementById('totalInvitados')
-        .innerText = invitados.length;
+function actualizarContadores() {
 
-    document.getElementById('contadorIngresados')
-        .innerText = ingresados.length;
+    document.getElementById("totalInvitados").textContent =
+        invitados.length;
 
-    document.getElementById('contadorPendientes')
-        .innerText =
-            invitados.length - ingresados.length;
+    document.getElementById("totalIngresados").textContent =
+        ingresados.length;
 
+    document.getElementById("totalPendientes").textContent =
+        invitados.length - ingresados.length;
 }
 
-// Buscar invitados
+
+// ===============================
+// BUSCADOR
+// ===============================
 
 document
-    .getElementById('searchInput')
-    .addEventListener('keyup', function() {
+    .getElementById("buscador")
+    .addEventListener("input", function () {
 
-        const texto =
-            this.value.toLowerCase();
+        const texto = this.value.toLowerCase();
 
-        const filtrados =
-            invitados.filter(persona => {
+        const filtrados = invitados.filter(persona => {
 
-                const nombreCompleto = `
-                    ${persona.Nombre || ''}
-                    ${persona['Apellido P'] || ''}
-                    ${persona['Apellido M'] || ''}
-                    ${persona['Cargo/Grado'] || ''}
-                `;
+            const nombreCompleto = `
+                ${persona["Nombre"] || ""}
+                ${persona["Apellido P"] || ""}
+                ${persona["Apellido M"] || ""}
+                ${persona["Cargo/Grado"] || ""}
+            `
+                .toLowerCase();
 
-                return nombreCompleto
-                    .toLowerCase()
-                    .includes(texto);
+            return nombreCompleto.includes(texto);
 
-            });
+        });
 
         mostrarInvitados(filtrados);
 
