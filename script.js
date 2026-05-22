@@ -30,75 +30,40 @@ window.onload = async function() {
 
 // Mostrar invitados
 
-function mostrarInvitados(lista) {
+fila.innerHTML = `
+    <td>${persona["Cargo/Grado"] || ""}</td>
 
-    const tabla =
-        document.getElementById('tablaInvitados');
+    <td>
+        ${persona["Nombre"] || ""} 
+        ${persona["Apellido P"] || ""} 
+        ${persona["Apellido M"] || ""}
+    </td>
 
-    tabla.innerHTML = '';
+    <td>${persona["Sector"] || ""}</td>
 
-    lista.forEach((persona) => {
+    <td>${persona["Asiento"] || ""}</td>
 
-        const nombreCompleto = `
-            ${persona.Nombre || ''}
-            ${persona['Apellido P'] || ''}
-            ${persona['Apellido M'] || ''}
-        `;
-
-        const presente =
-            ingresados.includes(nombreCompleto);
-
-        const fila =
-            document.createElement('tr');
-
-        fila.innerHTML = `
-
-            <td>
-                ${persona['Cargo/Grado'] || ''}
-            </td>
-
-            <td>
-                ${nombreCompleto}
-            </td>
-
-            <td>
-                ${persona['Sector'] || ''}
-            </td>
-
-            <td>
-                ${persona['Asiento'] || ''}
-            </td>
-
-            <td>
-
-                <button
-                    class="btn ${
-                        presente
-                        ? 'btn-secondary'
-                        : 'btn-success'
-                    } btn-presente"
-
-                    onclick="marcarIngreso(
-                        '${nombreCompleto}'
-                    )"
-                >
-
-                    ${
-                        presente
-                        ? 'Presente'
-                        : 'Ingresó'
-                    }
-
-                </button>
-
-            </td>
-        `;
-
-        tabla.appendChild(fila);
-
-    });
-
-}
+    <td>
+        <button 
+            class="btn ${
+                ingresados.includes(
+                    `${persona["Nombre"]}${persona["Apellido P"]}`
+                )
+                    ? "btn-danger"
+                    : "btn-success"
+            }"
+            onclick="marcarIngreso('${persona["Nombre"]}${persona["Apellido P"]}')"
+        >
+            ${
+                ingresados.includes(
+                    `${persona["Nombre"]}${persona["Apellido P"]}`
+                )
+                    ? "Deshacer"
+                    : "Ingresó"
+            }
+        </button>
+    </td>
+`;
 
 // Marcar ingreso
 
