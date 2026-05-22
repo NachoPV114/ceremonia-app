@@ -1,42 +1,70 @@
 let invitados = [];
-let ingresados = JSON.parse(localStorage.getItem("ingresados")) || [];
 
-// Cargar Excel automáticamente
+// ================================
+// CARGAR EXCEL
+// ================================
+
 window.onload = async function () {
 
-    const respuesta = await fetch('Invitados.xlsx');
-    const data = await respuesta.arrayBuffer();
+    try {
 
-    const workbook = XLSX.read(data, {
-        type: 'array'
-    });
-
-    const hoja = workbook.Sheets[workbook.SheetNames[0]];
-
-    invitados = XLSX.utils.sheet_to_json(hoja);
-
-    invitados = invitados.map(persona => {
-
-        const yaIngreso = ingresados.includes(
-            persona["Nombre Completo"]
+        const respuesta = await fetch(
+            'Invitados.xlsx?v=' + new Date().getTime()
         );
 
-        return {
-            ...persona,
-            estado: yaIngreso
-        };
+        const data = await respuesta.arrayBuffer();
 
-    });
+        const workbook = XLSX.read(data, {
+            type: 'array'
+        });
 
-    mostrarInvitados(invitados);
-    actualizarContadores();
+        const hoja =
+            workbook.Sheets[workbook.SheetNames[0]];
+
+        invitados = XLSX.utils.sheet_to_json(hoja);
+
+        // Crear nombre completo
+        invitados = invitados.map(persona => {
+
+            const nombreCompleto = `
+                ${persona["Nombre"] || ""}
+                ${persona["Apellido P"] || ""}
+                ${persona["Apellido M"] || ""}
+            `
+            .replace(/\s+/g, ' ')
+            .trim();
+
+            return {
+                ...persona,
+                nombreCompleto,
+                estado: false
+            };
+
+        });
+
+        mostrarInvitados(invitados);
+
+        actualizarContadores();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Error cargando Excel");
+
+    }
 
 };
 
-// Mostrar invitados
+
+// ================================
+// MOSTRAR INVITADOS
+// ================================
+
 function mostrarInvitados(lista) {
 
-    const tabla = document.getElementById("tablaInvitados");
+    const tabla =
+        document.getElementById("tablaInvitados");
 
     tabla.innerHTML = "";
 
@@ -46,27 +74,39 @@ function mostrarInvitados(lista) {
 
         fila.innerHTML = `
 
-            <td>${persona["Grado"] || ""}</td>
+            <td>
+                ${persona["Cargo/Grado"] || ""}
+            </td>
 
-            <td>${persona["Nombre Completo"] || ""}</td>
+            <td>
+                ${persona.nombreCompleto}
+            </td>
 
-            <td>${persona["Sector"] || ""}</td>
+            <td>
+                ${persona["Sector"] || ""}
+            </td>
 
-            <td>${persona["Asiento"] || ""}</td>
+            <td>
+                ${persona["Asiento"] || ""}
+            </td>
 
             <td>
 
                 ${
                     persona.estado
                     ?
-                    `<button class="btn btn-danger"
-                        onclick="deshacerIngreso(${index})">
+                    `<button
+                        class="btn btn-danger"
+                        onclick="deshacerIngreso(${index})"
+                    >
                         Deshacer
                     </button>`
                     :
-                    `<button class="btn btn-success"
-                        onclick="marcarIngreso(${index})">
-                        Marcar ingreso
+                    `<button
+                        class="btn btn-success"
+                        onclick="marcarIngreso(${index})"
+                    >
+                        Ingresó
                     </button>`
                 }
 
@@ -80,81 +120,103 @@ function mostrarInvitados(lista) {
 
 }
 
-// Marcar ingreso
+
+// ================================
+// MARCAR INGRESO
+// ================================
+
 function marcarIngreso(index) {
 
     invitados[index].estado = true;
 
-    const nombre = invitados[index]["Nombre Completo"];
-
-    if (!ingresados.includes(nombre)) {
-        ingresados.push(nombre);
-    }
-
-    localStorage.setItem(
-        "ingresados",
-        JSON.stringify(ingresados)
-    );
-
     mostrarInvitados(invitados);
+
     actualizarContadores();
 
 }
 
-// Deshacer ingreso
+
+// ================================
+// DESHACER INGRESO
+// ================================
+
 function deshacerIngreso(index) {
 
     invitados[index].estado = false;
 
-    const nombre = invitados[index]["Nombre Completo"];
-
-    ingresados = ingresados.filter(
-        item => item !== nombre
-    );
-
-    localStorage.setItem(
-        "ingresados",
-        JSON.stringify(ingresados)
-    );
-
     mostrarInvitados(invitados);
+
     actualizarContadores();
 
 }
 
-// Actualizar contadores
+
+// ================================
+// CONTADORES
+// ================================
+
 function actualizarContadores() {
 
     const total = invitados.length;
 
-    const totalIngresados = invitados.filter(
+    const ingresados = invitados.filter(
         persona => persona.estado
     ).length;
 
-    const pendientes = total - totalIngresados;
+    const pendientes = total - ingresados;
 
-    document.getElementById("totalInvitados").textContent = total;
+    document.getElementById(
+        "totalInvitados"
+    ).textContent = total;
 
-    document.getElementById("ingresados").textContent = totalIngresados;
+    document.getElementById(
+        "ingresados"
+    ).textContent = ingresados;
 
-    document.getElementById("pendientes").textContent = pendientes;
+    document.getElementById(
+        "pendientes"
+    ).textContent = pendientes;
 
 }
 
-// Buscador
-document.getElementById("buscador").addEventListener("input", function () {
 
-    const texto = this.value.toLowerCase();
+// ================================
+// BUSCADOR
+// ================================
 
-    const filtrados = invitados.filter(persona => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-        return Object.values(persona)
-            .join(" ")
-            .toLowerCase()
-            .includes(texto);
+        const buscador =
+            document.getElementById("buscador");
 
-    });
+        buscador.addEventListener(
+            "keyup",
+            () => {
 
-    mostrarInvitados(filtrados);
+                const texto =
+                    buscador.value.toLowerCase();
 
-});
+                const filtrados =
+                    invitados.filter(persona => {
+
+                        const contenido = `
+                            ${persona["Cargo/Grado"] || ""}
+                            ${persona.nombreCompleto || ""}
+                            ${persona["Sector"] || ""}
+                            ${persona["Asiento"] || ""}
+                        `
+                        .toLowerCase();
+
+                        return contenido.includes(texto);
+
+                    });
+
+                mostrarInvitados(filtrados);
+
+            }
+        );
+
+    }
+);
