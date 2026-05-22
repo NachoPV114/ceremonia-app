@@ -1,8 +1,9 @@
 let invitados = [];
 
-// ================================
+
+// ======================================
 // CARGAR EXCEL
-// ================================
+// ======================================
 
 window.onload = async function () {
 
@@ -23,21 +24,23 @@ window.onload = async function () {
 
         invitados = XLSX.utils.sheet_to_json(hoja);
 
-        // Crear nombre completo
+        // Agregar estado
         invitados = invitados.map(persona => {
 
-            const nombreCompleto = `
-                ${persona["Nombre"] || ""}
-                ${persona["Apellido P"] || ""}
-                ${persona["Apellido M"] || ""}
-            `
-            .replace(/\s+/g, ' ')
-            .trim();
-
             return {
+
                 ...persona,
-                nombreCompleto,
-                estado: false
+
+                estado: false,
+
+                nombreCompleto: `
+                    ${persona["Nombre"] || ""}
+                    ${persona["Apellido P"] || ""}
+                    ${persona["Apellido M"] || ""}
+                `
+                .replace(/\s+/g, ' ')
+                .trim()
+
             };
 
         });
@@ -57,9 +60,9 @@ window.onload = async function () {
 };
 
 
-// ================================
+// ======================================
 // MOSTRAR INVITADOS
-// ================================
+// ======================================
 
 function mostrarInvitados(lista) {
 
@@ -70,7 +73,8 @@ function mostrarInvitados(lista) {
 
     lista.forEach((persona, index) => {
 
-        const fila = document.createElement("tr");
+        const fila =
+            document.createElement("tr");
 
         fila.innerHTML = `
 
@@ -79,7 +83,7 @@ function mostrarInvitados(lista) {
             </td>
 
             <td>
-                ${persona.nombreCompleto}
+                ${persona.nombreCompleto || ""}
             </td>
 
             <td>
@@ -121,9 +125,9 @@ function mostrarInvitados(lista) {
 }
 
 
-// ================================
+// ======================================
 // MARCAR INGRESO
-// ================================
+// ======================================
 
 function marcarIngreso(index) {
 
@@ -136,9 +140,9 @@ function marcarIngreso(index) {
 }
 
 
-// ================================
+// ======================================
 // DESHACER INGRESO
-// ================================
+// ======================================
 
 function deshacerIngreso(index) {
 
@@ -151,9 +155,9 @@ function deshacerIngreso(index) {
 }
 
 
-// ================================
+// ======================================
 // CONTADORES
-// ================================
+// ======================================
 
 function actualizarContadores() {
 
@@ -180,9 +184,9 @@ function actualizarContadores() {
 }
 
 
-// ================================
+// ======================================
 // BUSCADOR
-// ================================
+// ======================================
 
 document.addEventListener(
     "DOMContentLoaded",
