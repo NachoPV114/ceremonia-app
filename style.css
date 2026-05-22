@@ -1,0 +1,59 @@
+body {
+
+    background-color: #f4f7fb;
+
+    font-family: Arial, sans-serif;
+
+}
+
+h1 {
+
+    color: #002147;
+
+    font-weight: bold;
+
+}
+
+.subtitulo {
+
+    color: gray;
+
+}
+
+.card {
+
+    border-radius: 15px;
+
+    border: none;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+}
+
+.estadistica {
+
+    text-align: center;
+
+    padding: 20px;
+
+}
+
+.estadistica h2 {
+
+    color: #003366;
+
+    font-weight: bold;
+
+}
+
+.table {
+
+    background-color: white;
+
+}
+
+.btn-presente {
+
+    width: 100%;
+
+}
