@@ -4,13 +4,23 @@ let ingresados = JSON.parse(
     localStorage.getItem('ingresados')
 ) || [];
 
-// Cargar invitados automáticamente
+// Cargar Excel automáticamente
 
 window.onload = async function() {
 
-    const respuesta = await fetch('invitados.json');
+    const respuesta = await fetch('Invitados.xlsx');
 
-    invitados = await respuesta.json();
+    const data = await respuesta.arrayBuffer();
+
+    const workbook = XLSX.read(data, {
+        type: 'array'
+    });
+
+    const hoja =
+        workbook.Sheets[workbook.SheetNames[0]];
+
+    invitados =
+        XLSX.utils.sheet_to_json(hoja);
 
     mostrarInvitados(invitados);
 
@@ -27,22 +37,37 @@ function mostrarInvitados(lista) {
 
     tabla.innerHTML = '';
 
-    lista.forEach((persona, index) => {
+    lista.forEach((persona) => {
 
-        const fila = document.createElement('tr');
+        const nombreCompleto = `
+            ${persona.Nombre || ''}
+            ${persona['Apellido P'] || ''}
+            ${persona['Apellido M'] || ''}
+        `;
 
         const presente =
-            ingresados.includes(persona.nombre);
+            ingresados.includes(nombreCompleto);
+
+        const fila =
+            document.createElement('tr');
 
         fila.innerHTML = `
 
-            <td>${persona.grado}</td>
+            <td>
+                ${persona['Cargo/Grado'] || ''}
+            </td>
 
-            <td>${persona.nombre}</td>
+            <td>
+                ${nombreCompleto}
+            </td>
 
-            <td>${persona.sector}</td>
+            <td>
+                ${persona['Sector'] || ''}
+            </td>
 
-            <td>${persona.asiento}</td>
+            <td>
+                ${persona['Asiento'] || ''}
+            </td>
 
             <td>
 
@@ -53,7 +78,9 @@ function mostrarInvitados(lista) {
                         : 'btn-success'
                     } btn-presente"
 
-                    onclick="marcarIngreso('${persona.nombre}')"
+                    onclick="marcarIngreso(
+                        '${nombreCompleto}'
+                    )"
                 >
 
                     ${
@@ -79,28 +106,20 @@ function marcarIngreso(nombre) {
 
     if (ingresados.includes(nombre)) {
 
-        // Quitar ingreso
-
         ingresados = ingresados.filter(
             persona => persona !== nombre
         );
 
     } else {
 
-        // Agregar ingreso
-
         ingresados.push(nombre);
 
     }
-
-    // Guardar automáticamente
 
     localStorage.setItem(
         'ingresados',
         JSON.stringify(ingresados)
     );
-
-    // Actualizar pantalla
 
     mostrarInvitados(invitados);
 
@@ -133,19 +152,21 @@ document
         const texto =
             this.value.toLowerCase();
 
-        const filtrados = invitados.filter(persona =>
+        const filtrados =
+            invitados.filter(persona => {
 
-            persona.nombre
-                .toLowerCase()
-                .includes(texto)
+                const nombreCompleto = `
+                    ${persona.Nombre || ''}
+                    ${persona['Apellido P'] || ''}
+                    ${persona['Apellido M'] || ''}
+                    ${persona['Cargo/Grado'] || ''}
+                `;
 
-            ||
+                return nombreCompleto
+                    .toLowerCase()
+                    .includes(texto);
 
-            persona.grado
-                .toLowerCase()
-                .includes(texto)
-
-        );
+            });
 
         mostrarInvitados(filtrados);
 
