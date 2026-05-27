@@ -146,7 +146,51 @@
     </div>
 
     <!-- SCRIPT -->
-    <script src="script.js"></script>
+    <!-- FIREBASE -->
+<script type="module">
+
+    import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+    import {
+        getFirestore
+    }
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // CONFIG FIREBASE
+    const firebaseConfig = {
+
+        apiKey: "AIzaSyAW5NgSimObS9LScI-EUjPqP9_ai6h-ePU",
+
+        authDomain:
+            "ceremonia-lanzamiento.firebaseapp.com",
+
+        projectId:
+            "ceremonia-lanzamiento",
+
+        storageBucket:
+            "ceremonia-lanzamiento.firebasestorage.app",
+
+        messagingSenderId:
+            "291757329730",
+
+        appId:
+            "1:291757329730:web:3a4795b7755173b4fd4cdb"
+
+    };
+
+    // INICIALIZAR FIREBASE
+    const app = initializeApp(firebaseConfig);
+
+    const db = getFirestore(app);
+
+    // HACER GLOBAL
+    window.db = db;
+
+</script>
+
+<!-- SCRIPT PRINCIPAL -->
+<script src="script.js"></script>
 
 </body>
 

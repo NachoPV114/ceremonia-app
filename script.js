@@ -1,127 +1,134 @@
+import {
+    collection,
+    getDocs,
+    addDoc,
+    deleteDoc,
+    doc,
+    query,
+    where
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 let invitados = [];
 
+let ingresados = [];
 
-// ======================================
-// CARGAR EXCEL
-// ======================================
+
+// ===============================
+// CARGAR TODO
+// ===============================
 
 window.onload = async function () {
 
-    try {
+    // Cargar Excel
+    const respuesta =
+        await fetch("Invitados.xlsx");
 
-        const respuesta = await fetch(
-            'Invitados.xlsx?v=' + new Date().getTime()
-        );
+    const data =
+        await respuesta.arrayBuffer();
 
-        const data = await respuesta.arrayBuffer();
-
-        const workbook = XLSX.read(data, {
-            type: 'array'
+    const workbook =
+        XLSX.read(data, {
+            type: "array"
         });
 
-        const hoja =
-            workbook.Sheets[workbook.SheetNames[0]];
+    const hoja =
+        workbook.Sheets[
+            workbook.SheetNames[0]
+        ];
 
-        invitados = XLSX.utils.sheet_to_json(hoja);
+    invitados =
+        XLSX.utils.sheet_to_json(hoja);
 
-        invitados = invitados.map(persona => {
+    // Cargar ingresos Firebase
+    await cargarIngresados();
 
-            // Detectar grado automáticamente
-            const grado =
-                persona["Cargo/Grado"] ||
-                persona["Grado"] ||
-                persona["Cargo"] ||
-                "";
+    // Mostrar
+    mostrarInvitados(invitados);
 
-            // Crear nombre completo
-            const nombreCompleto = `
-                ${persona["Nombre"] || ""}
-                ${persona["Apellido P"] || ""}
-                ${persona["Apellido Materno"] || ""}
-                ${persona["Apellido M"] || ""}
-            `
-            .replace(/\s+/g, ' ')
-            .trim();
-
-            return {
-
-                ...persona,
-
-                grado,
-
-                nombreCompleto,
-
-                estado: false
-
-            };
-
-        });
-
-        mostrarInvitados(invitados);
-
-        actualizarContadores();
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert("Error cargando Excel");
-
-    }
+    actualizarContadores();
 
 };
 
 
-// ======================================
-// MOSTRAR INVITADOS
-// ======================================
+// ===============================
+// CARGAR INGRESADOS FIREBASE
+// ===============================
+
+async function cargarIngresados() {
+
+    ingresados = [];
+
+    const snapshot = await getDocs(
+        collection(window.db, "ingresados")
+    );
+
+    snapshot.forEach((documento) => {
+
+        ingresados.push({
+            id: documento.id,
+            nombre: documento.data().nombre
+        });
+
+    });
+
+}
+
+
+// ===============================
+// MOSTRAR TABLA
+// ===============================
 
 function mostrarInvitados(lista) {
 
     const tabla =
-        document.getElementById("tablaInvitados");
+        document.getElementById(
+            "tablaInvitados"
+        );
 
     tabla.innerHTML = "";
 
-    lista.forEach((persona, index) => {
+    lista.forEach((persona) => {
+
+        const nombre =
+            persona["Nombre Completo"] || "";
+
+        const ingresado =
+            ingresados.find(
+                item => item.nombre === nombre
+            );
 
         const fila =
             document.createElement("tr");
 
         fila.innerHTML = `
 
-            <td>
-                ${persona.grado}
-            </td>
+            <td>${persona["Grado"] || ""}</td>
 
-            <td>
-                ${persona.nombreCompleto}
-            </td>
+            <td>${nombre}</td>
 
-            <td>
-                ${persona["Sector"] || ""}
-            </td>
+            <td>${persona["Sector"] || ""}</td>
 
-            <td>
-                ${persona["Asiento"] || ""}
-            </td>
+            <td>${persona["Asiento"] || ""}</td>
 
             <td>
 
                 ${
-                    persona.estado
+                    ingresado
+
                     ?
+
                     `<button
                         class="btn btn-danger"
-                        onclick="deshacerIngreso(${index})"
-                    >
+                        onclick="deshacerIngreso('${ingresado.id}')">
                         Deshacer
                     </button>`
+
                     :
+
                     `<button
                         class="btn btn-success"
-                        onclick="marcarIngreso(${index})"
-                    >
+                        onclick="marcarIngreso('${nombre}')">
                         Marcar ingreso
                     </button>`
                 }
@@ -137,28 +144,20 @@ function mostrarInvitados(lista) {
 }
 
 
-// ======================================
+// ===============================
 // MARCAR INGRESO
-// ======================================
+// ===============================
 
-function marcarIngreso(index) {
+async function marcarIngreso(nombre) {
 
-    invitados[index].estado = true;
+    await addDoc(
+        collection(window.db, "ingresados"),
+        {
+            nombre: nombre
+        }
+    );
 
-    mostrarInvitados(invitados);
-
-    actualizarContadores();
-
-}
-
-
-// ======================================
-// DESHACER INGRESO
-// ======================================
-
-function deshacerIngreso(index) {
-
-    invitados[index].estado = false;
+    await cargarIngresados();
 
     mostrarInvitados(invitados);
 
@@ -167,72 +166,87 @@ function deshacerIngreso(index) {
 }
 
 
-// ======================================
+// ===============================
+// DESHACER
+// ===============================
+
+async function deshacerIngreso(id) {
+
+    await deleteDoc(
+        doc(window.db, "ingresados", id)
+    );
+
+    await cargarIngresados();
+
+    mostrarInvitados(invitados);
+
+    actualizarContadores();
+
+}
+
+
+// ===============================
 // CONTADORES
-// ======================================
+// ===============================
 
 function actualizarContadores() {
 
-    const total = invitados.length;
+    const total =
+        invitados.length;
 
-    const ingresados = invitados.filter(
-        persona => persona.estado
-    ).length;
+    const totalIngresados =
+        ingresados.length;
 
-    const pendientes = total - ingresados;
+    const pendientes =
+        total - totalIngresados;
 
     document.getElementById(
         "totalInvitados"
     ).textContent = total;
 
     document.getElementById(
-        "ingresados"
-    ).textContent = ingresados;
+        "totalIngresados"
+    ).textContent = totalIngresados;
 
     document.getElementById(
-        "pendientes"
+        "totalPendientes"
     ).textContent = pendientes;
 
 }
 
 
-// ======================================
+// ===============================
 // BUSCADOR
-// ======================================
+// ===============================
 
-document.addEventListener(
-    "DOMContentLoaded",
-    () => {
+document
+.getElementById("buscador")
+.addEventListener("input", function () {
 
-        const buscador =
-            document.getElementById("buscador");
+    const texto =
+        this.value.toLowerCase();
 
-        buscador.addEventListener(
-            "keyup",
-            () => {
+    const filtrados =
+        invitados.filter(persona => {
 
-                const texto =
-                    buscador.value.toLowerCase();
+            return Object.values(persona)
+                .join(" ")
+                .toLowerCase()
+                .includes(texto);
 
-                const filtrados =
-                    invitados.filter(persona => {
+        });
 
-                        const contenido = `
-                            ${persona.grado}
-                            ${persona.nombreCompleto}
-                            ${persona["Sector"] || ""}
-                            ${persona["Asiento"] || ""}
-                        `
-                        .toLowerCase();
+    mostrarInvitados(filtrados);
 
-                        return contenido.includes(texto);
+});
 
-                    });
 
-                mostrarInvitados(filtrados);
+// ===============================
+// HACER GLOBAL
+// ===============================
 
-            }
-        );
+window.marcarIngreso =
+    marcarIngreso;
 
-    }
-);
+window.deshacerIngreso =
+    deshacerIngreso;
