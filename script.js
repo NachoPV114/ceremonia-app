@@ -33,10 +33,8 @@ window.onload = async function () {
         });
 
     const hoja =
-        workbook.Sheets[
-            workbook.SheetNames[0]
-        ];
-
+    workbook.Sheets["Consolidado"];
+    
     invitados =
         XLSX.utils.sheet_to_json(hoja);
 
@@ -95,9 +93,7 @@ function mostrarInvitados(lista) {
 
         const ingresado =
             ingresados.find(
-                item => item.nombre === nombre
-            );
-
+                item => item.nombre === nombres
         const fila =
             document.createElement("tr");
 
