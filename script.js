@@ -60,15 +60,18 @@ window.onload = async function () {
 
 function obtenerNombre(persona) {
 
-    return `
+    const nombre = `
         ${persona["Prefijo"] || ""}
         ${persona["Nombre"] || ""}
         ${persona["Apellido Paterno"] || ""}
         ${persona["Apellido Materno"] || ""}
-    `
-        .replace(/\s+/g, " ")
-        .trim();
+    `.replace(/\s+/g, " ").trim();
 
+    if (nombre !== "") {
+        return nombre;
+    }
+
+    return persona["Cargo"] || "Sin nombre";
 }
 
 
@@ -324,40 +327,39 @@ async function guardarEnFirebase(id) {
 
 }
 
-
 async function cargarIngresosFirebase() {
 
-    try {
+    window.firebaseFirestore.onSnapshot(
 
-        const snapshot =
-            await window.firebaseFirestore.getDocs(
-                window.coleccionIngresos
+        window.coleccionIngresos,
+
+        (snapshot) => {
+
+            ingresos = {};
+
+            snapshot.forEach((docu) => {
+
+                const datos = docu.data();
+
+                if (datos.ingresado === true) {
+                    ingresos[docu.id] = true;
+                }
+
+            });
+
+            console.log(
+                "Ingresos sincronizados:",
+                Object.keys(ingresos).length
             );
 
-        snapshot.forEach(doc => {
+            actualizarContadores();
 
-            const datos =
-                doc.data();
+            mostrarInvitados(
+                invitadosFiltrados
+            );
 
-            if (datos.ingresado === true) {
+        }
 
-                ingresos[doc.id] = true;
-
-            }
-
-        });
-
-        console.log(
-            "Ingresos cargados desde Firebase:",
-            Object.keys(ingresos).length
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-    }
+    );
 
 }
