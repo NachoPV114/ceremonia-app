@@ -31,8 +31,6 @@ window.onload = async function () {
         invitadosFiltrados =
             [...invitados];
 
-            await cargarIngresosFirebase();
-
         actualizarContadores();
 
         mostrarInvitados(
@@ -174,8 +172,6 @@ function cambiarEstado(id) {
         ingresos[id] = true;
 
     }
-    guardarEnFirebase(id);
-
  localStorage.setItem(
         "ingresos",
         JSON.stringify(
@@ -283,81 +279,3 @@ document.addEventListener(
 
     }
 );
-
-async function guardarEnFirebase(id) {
-
-    try {
-
-        const ref =
-            window.firebaseFirestore.doc(
-                window.db,
-                "ingresos",
-                String(id)
-            );
-
-        await window.firebaseFirestore.setDoc(
-            ref,
-            {
-                ingresado:
-                    ingresos[id] === true,
-
-                fecha:
-                    new Date()
-                        .toISOString()
-            }
-        );
-
-        console.log(
-            "Guardado Firebase:",
-            id
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(
-            error
-        );
-
-    }
-
-}
-
-
-async function cargarIngresosFirebase() {
-
-    try {
-
-        const snapshot =
-            await window.firebaseFirestore.getDocs(
-                window.coleccionIngresos
-            );
-
-        snapshot.forEach(doc => {
-
-            const datos =
-                doc.data();
-
-            if (datos.ingresado === true) {
-
-                ingresos[doc.id] = true;
-
-            }
-
-        });
-
-        console.log(
-            "Ingresos cargados desde Firebase:",
-            Object.keys(ingresos).length
-        );
-
-    }
-
-    catch (error) {
-
-        console.error(error);
-
-    }
-
-}
