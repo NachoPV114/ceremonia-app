@@ -18,9 +18,7 @@ window.onload = async function () {
             });
 
         const nombreHoja =
-            workbook.SheetNames.find(
-                h => h.toLowerCase() === "maestro"
-            );
+            workbook.SheetNames[0];
 
         const hoja =
             workbook.Sheets[nombreHoja];
@@ -28,11 +26,10 @@ window.onload = async function () {
         invitados =
             XLSX.utils.sheet_to_json(hoja);
 
-
         invitadosFiltrados =
             [...invitados];
 
-            await cargarIngresosFirebase();
+        await cargarIngresosFirebase();
 
         actualizarContadores();
 
@@ -54,47 +51,14 @@ window.onload = async function () {
 
 };
 
-
-// ============================
-// NOMBRE COMPLETO
-// ============================
-
 function obtenerNombre(persona) {
 
     return (
         persona["NOMBRE COMPLETO"] ||
-        (
-            `${persona["NOMBRE"] || ""} ${
-                persona["APE. P."] || ""
-            } ${
-                persona["APE. M."] || ""
-            }`
-        ).trim()
+        "Sin nombre"
     );
 
 }
-
-
-// ============================
-// UBICACION
-// ============================
-
-function obtenerUbicacion(persona) {
-
-    const tribuna =
-        persona["TRIBUNA"] || "";
-
-    const asiento =
-        persona["ASIENTO"] || "";
-
-    return `${tribuna} - ${asiento}`;
-
-}
-
-
-// ============================
-// MOSTRAR TABLA
-// ============================
 
 function mostrarInvitados(lista) {
 
@@ -108,7 +72,9 @@ function mostrarInvitados(lista) {
     lista.forEach(persona => {
 
         const id =
-            persona["N°"];
+            persona["N°"] ||
+            persona["Nº"] ||
+            persona["N"];
 
         const ingresado =
             ingresos[id] === true;
@@ -122,9 +88,9 @@ function mostrarInvitados(lista) {
 
                 <button
                     class="btn ${ingresado ? 'btn-danger' : 'btn-success'} btn-sm"
-                    onclick="cambiarEstado(${id})">
+                    onclick="cambiarEstado('${id}')">
 
-                    ${ingresado ? 'Deshacer' : 'Marcar ingreso'}
+                    ${ingresado ? 'Deshacer' : 'Ingresó'}
 
                 </button>
 
@@ -135,19 +101,15 @@ function mostrarInvitados(lista) {
             </td>
 
             <td>
-                ${persona["Cargo"] || ""}
+                ${persona["CARGO"] || ""}
             </td>
 
             <td>
-                ${persona["Empresa/Universidad/Otro"] || ""}
+                ${persona["TRIBUNA"] || ""}
             </td>
 
             <td>
-                ${persona["Categoría"] || ""}
-            </td>
-
-            <td>
-                ${obtenerUbicacion(persona)}
+                ${persona["ASIENTO"] || ""}
             </td>
 
         `;
@@ -159,6 +121,7 @@ function mostrarInvitados(lista) {
     });
 
 }
+
 function cambiarEstado(id) {
 
     if (ingresos[id]) {
@@ -172,9 +135,10 @@ function cambiarEstado(id) {
         ingresos[id] = true;
 
     }
+
     guardarEnFirebase(id);
 
- localStorage.setItem(
+    localStorage.setItem(
         "ingresos",
         JSON.stringify(
             ingresos
@@ -189,10 +153,6 @@ function cambiarEstado(id) {
 
 }
 
-
-// ============================
-// CONTADORES
-// ============================
 const guardados =
     localStorage.getItem(
         "ingresos"
@@ -206,6 +166,7 @@ if (guardados) {
         );
 
 }
+
 function actualizarContadores() {
 
     const ingresados =
@@ -230,11 +191,6 @@ function actualizarContadores() {
 
 }
 
-
-// ============================
-// BUSCADOR
-// ============================
-
 document.addEventListener(
     "DOMContentLoaded",
     () => {
@@ -257,11 +213,13 @@ document.addEventListener(
                         persona => {
 
                             const contenido = `
-                                ${persona["Apellido Paterno"] || ""}
-                                ${persona["Apellido Materno"] || ""}
-                                ${persona["Cargo"] || ""}
-                                ${persona["Empresa/Universidad/Otro"] || ""}
-                                ${persona["Categoría"] || ""}
+                                ${persona["NOMBRE COMPLETO"] || ""}
+                                ${persona["NOMBRE"] || ""}
+                                ${persona["APE. P."] || ""}
+                                ${persona["APE. M."] || ""}
+                                ${persona["CARGO"] || ""}
+                                ${persona["TRIBUNA"] || ""}
+                                ${persona["ASIENTO"] || ""}
                             `
                                 .toLowerCase();
 
@@ -305,11 +263,6 @@ async function guardarEnFirebase(id) {
             }
         );
 
-        console.log(
-            "Guardado Firebase:",
-            id
-        );
-
     }
 
     catch (error) {
@@ -337,15 +290,14 @@ async function cargarIngresosFirebase() {
                 const datos = docu.data();
 
                 if (datos.ingresado === true) {
-                    ingresos[docu.id] = true;
+
+                    ingresos[
+                        docu.id
+                    ] = true;
+
                 }
 
             });
-
-            console.log(
-                "Ingresos sincronizados:",
-                Object.keys(ingresos).length
-            );
 
             actualizarContadores();
 
