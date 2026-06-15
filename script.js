@@ -19,7 +19,7 @@ window.onload = async function () {
 
         const nombreHoja =
             workbook.SheetNames.find(
-                h => h.toLowerCase() === "consolidado"
+                h => h.toLowerCase() === "maestro"
             );
 
         const hoja =
@@ -27,6 +27,8 @@ window.onload = async function () {
 
         invitados =
             XLSX.utils.sheet_to_json(hoja);
+
+        console.log(invitados[0]);
 
         invitadosFiltrados =
             [...invitados];
@@ -60,18 +62,17 @@ window.onload = async function () {
 
 function obtenerNombre(persona) {
 
-    const nombre = `
-        ${persona["Prefijo"] || ""}
-        ${persona["Nombre"] || ""}
-        ${persona["Apellido Paterno"] || ""}
-        ${persona["Apellido Materno"] || ""}
-    `.replace(/\s+/g, " ").trim();
+    return (
+        persona["NOMBRE COMPLETO"] ||
+        (
+            `${persona["NOMBRE"] || ""} ${
+                persona["APE. P."] || ""
+            } ${
+                persona["APE. M."] || ""
+            }`
+        ).trim()
+    );
 
-    if (nombre !== "") {
-        return nombre;
-    }
-
-    return persona["Cargo"] || "Sin nombre";
 }
 
 
@@ -82,17 +83,12 @@ function obtenerNombre(persona) {
 function obtenerUbicacion(persona) {
 
     const tribuna =
-        persona["Tribuna"] || "";
+        persona["TRIBUNA"] || "";
 
     const asiento =
-        persona["Asiento"] || "";
+        persona["ASIENTO"] || "";
 
-    return `
-        ${tribuna}
-        Asiento ${asiento}
-    `
-        .replace(/\s+/g, " ")
-        .trim();
+    return `${tribuna} - ${asiento}`;
 
 }
 
@@ -113,7 +109,7 @@ function mostrarInvitados(lista) {
     lista.forEach(persona => {
 
         const id =
-            persona["Nro."];
+            persona["N°"];
 
         const ingresado =
             ingresos[id] === true;
