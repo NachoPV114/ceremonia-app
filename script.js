@@ -28,7 +28,6 @@ window.onload = async function () {
         invitados =
             XLSX.utils.sheet_to_json(hoja);
 
-        console.log(invitados[0]);
 
         invitadosFiltrados =
             [...invitados];
