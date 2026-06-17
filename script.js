@@ -90,6 +90,68 @@ function obtenerNombre(persona) {
 
 }
 
+function mostrarInvitados(lista) {
+
+    const tabla =
+        document.getElementById(
+            "tablaInvitados"
+        );
+
+    tabla.innerHTML = "";
+
+    lista.forEach(persona => {
+
+        const id =
+            persona["N°"] ||
+            persona["Nº"] ||
+            persona["N"];
+
+        const ingresado =
+            ingresos[id] === true;
+
+        const fila =
+            document.createElement("tr");
+
+        fila.innerHTML = `
+
+            <td>
+
+                <button
+                    class="btn ${ingresado ? 'btn-danger' : 'btn-success'} btn-sm"
+                    onclick="cambiarEstado('${id}')">
+
+                    ${ingresado ? 'Deshacer' : 'Ingresó'}
+
+                </button>
+
+            </td>
+
+            <td>
+                ${obtenerNombre(persona)}
+            </td>
+
+            <td>
+                ${persona["CARGO"] || ""}
+            </td>
+
+            <td>
+                ${persona["TRIBUNA"] || ""}
+            </td>
+
+            <td>
+                ${persona["ASIENTO.1"] || persona["ASIENTO"] || ""}
+            </td>
+
+        `;
+
+        tabla.appendChild(
+            fila
+        );
+
+    });
+
+}
+
 function actualizarContadores() {
 
     const ingresados =
@@ -142,7 +204,7 @@ document.addEventListener(
                                 ${persona["APE. M."] || ""}
                                 ${persona["CARGO"] || ""}
                                 ${persona["TRIBUNA"] || ""}
-                                ${persona["ASIENTO"] || ""}
+                                ${persona["ASIENTO.1"] || persona["ASIENTO"] || ""}
                             `
                                 .toLowerCase();
 
@@ -197,7 +259,32 @@ async function guardarEnFirebase(id) {
     }
 
 }
+function cambiarEstado(id) {
 
+    if (ingresos[id]) {
+
+        delete ingresos[id];
+
+    } else {
+
+        ingresos[id] = true;
+
+    }
+
+    guardarEnFirebase(id);
+
+    localStorage.setItem(
+        "ingresos",
+        JSON.stringify(ingresos)
+    );
+
+    actualizarContadores();
+
+    mostrarInvitados(
+        invitadosFiltrados
+    );
+
+}
 async function cargarIngresosFirebase() {
 
     window.firebaseFirestore.onSnapshot(
