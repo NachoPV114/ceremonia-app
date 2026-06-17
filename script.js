@@ -53,10 +53,40 @@ window.onload = async function () {
 
 function obtenerNombre(persona) {
 
-    return (
-        persona["NOMBRE COMPLETO"] ||
-        "Sin nombre"
-    );
+    const nombreCompleto =
+        String(
+            persona["NOMBRE COMPLETO"] || ""
+        ).trim();
+
+    if (nombreCompleto !== "") {
+        return nombreCompleto;
+    }
+
+    const nombre =
+        String(
+            persona["NOMBRE"] || ""
+        ).trim();
+
+    const apellidoP =
+        String(
+            persona["APE. P."] || ""
+        ).trim();
+
+    const apellidoM =
+        String(
+            persona["APE. M."] || ""
+        ).trim();
+
+    const nombreArmado =
+        `${nombre} ${apellidoP} ${apellidoM}`
+        .replace(/\s+/g, " ")
+        .trim();
+
+    if (nombreArmado !== "") {
+        return nombreArmado;
+    }
+
+    return "Sin nombre";
 
 }
 
