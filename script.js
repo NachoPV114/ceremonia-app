@@ -18,8 +18,9 @@ window.onload = async function () {
             });
 
         const nombreHoja =
-            workbook.SheetNames[0];
-
+             workbook.SheetNames.find(
+                 h => h.toUpperCase() === "MAESTRO"
+             );
         const hoja =
             workbook.Sheets[nombreHoja];
 
@@ -59,40 +60,18 @@ window.onload = async function () {
 
 function obtenerNombre(persona) {
 
-    const nombreCompleto =
-        String(
-            persona["NOMBRE COMPLETO"] || ""
-        ).trim();
-
-    if (nombreCompleto !== "") {
-        return nombreCompleto;
-    }
-
     const nombre =
-        String(
-            persona["NOMBRE"] || ""
-        ).trim();
+        String(persona["NOMBRE"] || "").trim();
 
     const apellidoP =
-        String(
-            persona["APE. P."] || ""
-        ).trim();
+        String(persona["APE. P."] || "").trim();
 
     const apellidoM =
-        String(
-            persona["APE. M."] || ""
-        ).trim();
+        String(persona["APE. M."] || "").trim();
 
-    const nombreArmado =
-        `${nombre} ${apellidoP} ${apellidoM}`
+    return `${apellidoP} ${apellidoM}, ${nombre}`
         .replace(/\s+/g, " ")
         .trim();
-
-    if (nombreArmado !== "") {
-        return nombreArmado;
-    }
-
-    return "Sin nombre";
 
 }
 
