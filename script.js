@@ -30,6 +30,8 @@ window.onload = async function () {
 
             console.log(Object.keys(invitados[0]));
 
+            console.log(invitados[0]);
+
         invitadosFiltrados =
             [...invitados];
 
