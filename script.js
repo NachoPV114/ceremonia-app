@@ -26,6 +26,8 @@ window.onload = async function () {
         invitados =
             XLSX.utils.sheet_to_json(hoja);
 
+            console.log("TOTAL REGISTROS:", invitados.length);
+
             console.log(Object.keys(invitados[0]));
 
         invitadosFiltrados =
@@ -210,6 +212,7 @@ document.addEventListener(
                                 ${persona["APE. P."] || ""}
                                 ${persona["APE. M."] || ""}
                                 ${persona["CARGO"] || ""}
+                                ${persona["FILA"] || ""}
                                 ${persona["TRIBUNA"] || ""}
                                 ${persona["ASIENTO"] || ""}
                             `
