@@ -24,7 +24,21 @@ window.onload = async function () {
             workbook.Sheets[nombreHoja];
 
         invitados =
-            XLSX.utils.sheet_to_json(hoja);
+            XLSX.utils.sheet_to_json(hoja)
+                .filter(persona => {
+
+                    const asistencia =
+                        String(
+                            persona["AST."] || ""
+                    )
+                    .trim()
+                    .toUpperCase();
+
+                    return asistencia === "SI";
+
+             });
+
+            console.log(invitados[0]);
 
         invitadosFiltrados =
             [...invitados];
@@ -139,9 +153,10 @@ function mostrarInvitados(lista) {
             </td>
 
             <td>
-                ${persona["ASIENTO.1"] || persona["ASIENTO"] || ""}
+                ${persona["ASIENTO"] || ""}
             </td>
 
+            
         `;
 
         tabla.appendChild(
@@ -204,7 +219,7 @@ document.addEventListener(
                                 ${persona["APE. M."] || ""}
                                 ${persona["CARGO"] || ""}
                                 ${persona["TRIBUNA"] || ""}
-                                ${persona["ASIENTO.1"] || persona["ASIENTO"] || ""}
+                                ${persona["ASIENTO"] || ""}
                             `
                                 .toLowerCase();
 
