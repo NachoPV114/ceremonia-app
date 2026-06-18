@@ -24,21 +24,9 @@ window.onload = async function () {
             workbook.Sheets[nombreHoja];
 
         invitados =
-            XLSX.utils.sheet_to_json(hoja)
-                .filter(persona => {
+            XLSX.utils.sheet_to_json(hoja);
 
-                    const asistencia =
-                        String(
-                            persona["AST."] || ""
-                    )
-                    .trim()
-                    .toUpperCase();
-
-                    return asistencia === "SI";
-
-             });
-
-            console.log(invitados[0]);
+            console.log(Object.keys(invitados[0]));
 
         invitadosFiltrados =
             [...invitados];
@@ -146,6 +134,10 @@ function mostrarInvitados(lista) {
 
             <td>
                 ${persona["CARGO"] || ""}
+            </td>
+
+            <td>
+                ${persona["FILA"] || ""}
             </td>
 
             <td>
